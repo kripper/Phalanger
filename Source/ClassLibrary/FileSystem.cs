@@ -1518,6 +1518,9 @@ namespace PHP.Library
             var fileStream = phpStream.RawStream as FileStream;
             if (fileStream == null) return false;
 
+			// TODO: flock is not working on Linux
+			// SEE: http://mono.1490590.n4.nabble.com/Equivalent-to-LockFileEx-on-Linux-td1575660.html
+
             if (Environment.OSVersion.Platform == PlatformID.Unix)
             {
                 switch ((StreamLockOptions)operation & ~StreamLockOptions.NoBlocking)
