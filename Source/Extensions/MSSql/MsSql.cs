@@ -370,6 +370,41 @@ namespace PHP.Library.Data
 			return connection;
 		}
 
+		[ImplementsFunction("ix_mssql_connect")]
+		[return: CastToFalse]
+        /**
+         * Motivation: global.NTAuthentication was not working.
+         * Based on mssql_connect()
+         */
+        public static PhpResource IX_Connect(string connectionString)
+        {
+            bool persistent = false;
+            bool newLink = false;
+
+            // persistent connections are treated as transient, a warning is issued:
+            if (persistent)
+                PhpException.FunctionNotSupported(PhpError.Notice);
+
+            MsSqlLocalConfig local = MsSqlConfiguration.Local;
+            MsSqlGlobalConfig global = MsSqlConfiguration.Global;
+
+            bool success;
+            PhpSqlDbConnection connection = (PhpSqlDbConnection)manager.OpenConnection(connectionString,
+              newLink, global.MaxConnections, out success);
+
+            if (!success)
+            {
+                if (connection != null)
+                {
+                    UpdateConnectErrorInfo(connection);
+                    connection = null;
+                }
+                return null;
+            }
+
+            return connection;
+        }
+
 		#endregion
 
 		#region mssql_free_result
