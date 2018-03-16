@@ -281,6 +281,18 @@ namespace PHP.Library.Data
 
 			try
 			{
+                // HACK: command.ExecuteReader() throws "EXECUTE indicates a mismatching number of BEGIN and COMMIT statements."
+                // and breaks transactions on Mono/Linux
+                if (commandText == "BEGIN TRANSACTION" || commandText == "ROLLBACK" || commandText == "COMMIT" || commandText.StartsWith("SET "))
+                {
+                    command.ExecuteNonQuery();
+                    lastResult = null;
+                    lastException = null;
+
+                    // Return dummy result. TODO: OPT:
+                    return ExecuteCommandInternal("SELECT 1", commandType, convertTypes, parameters, skipResults);
+                }
+
                 var/*!*/reader = this.pendingReader = command.ExecuteReader();
 
 				if (skipResults)
